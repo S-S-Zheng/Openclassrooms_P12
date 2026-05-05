@@ -56,9 +56,8 @@ class YieldResponse(BaseModel):
 
     # Explicabilité et Monitoring
     top_features: List[dict] = []
-    drift_detected: bool = False
 
-    # LLM Summary (Mistral)
+    # LLM (Mistral)
     analysis_fr: Optional[str] = None
 
     # Métadonnées
