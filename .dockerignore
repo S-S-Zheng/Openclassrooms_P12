@@ -67,12 +67,21 @@ README.md
 README_.md
 LICENSE
 
+# Ruff
+.ruff_cache
+
+# mlruns
+mlflow.db
+mlruns/
+
 # ---- En plus --------
 notebooks/
-src/
-utils_out_of_app/
+datas/
+misc/
 
 # Données
-data/faiss_index/
-data/faiss_index_testing/
-datas/ragas/
+htmlcov
+.coverage
+*.png
+*.csv
+
