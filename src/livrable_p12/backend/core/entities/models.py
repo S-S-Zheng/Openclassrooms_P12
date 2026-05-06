@@ -31,10 +31,10 @@ class CropYieldContext(BaseModel):
 
     country: str = Field(..., examples=["france", "albania"])
     year: int = Field(..., ge=1900, le=2100)
-    crop: str = Field(..., examples=["wheat", "rice", "maize"])
-    rainfall_mm: float = Field(..., ge=0.0, le=10000.0, alias="rainfall")
-    temperature_celcius: float = Field(..., ge=-50.0, le=50.0, alias="temp")
-    pesticide_tons: float = Field(..., ge=0, alias="pest")
+    crop: Optional[str] = Field(None, examples=["Wheat", "Maize"])
+    rainfall_mm: float = Field(..., ge=0.0, le=10000.0)
+    temperature_celcius: float = Field(..., ge=-50.0, le=50.0)
+    pesticides_tons: float = Field(..., ge=0)
     temp_anomaly: float = Field(
         ..., ge=0.0, le=2.0, description="Ratio temperature du pays / moyenne du pays"
     )
@@ -48,6 +48,13 @@ class PredictionResult(BaseModel):
     unit: str = "tons/ha"
 
 
+class FeatureImportance(BaseModel):
+    """Feature importance"""
+
+    feature: str
+    impact: float
+
+
 class YieldResponse(BaseModel):
     """Objet final renvoyé au Backend."""
 
@@ -55,10 +62,7 @@ class YieldResponse(BaseModel):
     recommendations: List[PredictionResult] = []
 
     # Explicabilité et Monitoring
-    top_features: List[dict] = []
-
-    # LLM (Mistral)
-    analysis_fr: Optional[str] = None
+    top_features: List[FeatureImportance] = []
 
     # Métadonnées
     datetime_utc: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

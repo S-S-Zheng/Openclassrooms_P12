@@ -62,6 +62,8 @@ mlruns/
 # Autres
 htmlcov
 .coverage
+*.png
+*.csv
 datas/
 misc/
 notebooks/

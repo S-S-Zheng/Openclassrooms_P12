@@ -17,31 +17,22 @@ class ONNXYieldPredictor(YieldPredictorPort):
     def __init__(self, model_path: str, metadata_path: str):
         # Chargement du runtime ONNX
         self.session = ort.InferenceSession(model_path, providers=["CPUExecutionProvider"])
-        # Liste exhaustive des cultures du dataset
-        self.all_crops = [
-            "Potatoes",
-            "Maize",
-            "Wheat",
-            "Rice, paddy",
-            "Sorghum",
-            "Soybeans",
-            "Sweet potatoes",
-            "Cassava",
-            "Plantains and others",
-            "Yams",
-        ]
-        # On injecte ici les résultats SHAP globale faites en amont
         self.metadata_path = metadata_path
-        self.global_importance = self._load_metadatas()
+        # On injecte ici les résultats SHAP globale faites en amont et liste des cultures
+        # Un seul appel, on dépaquette le tuple
+        self.all_crops, self.global_importance = self._load_metadatas()
 
     def _load_metadatas(self):
         try:
             with open(self.metadata_path, "r", encoding="utf-8") as f:
                 metadata = json.load(f)
-            return [FeatureImportance(**item) for item in metadata]
+            all_crops = metadata["all_crops"]
+            global_importance = [
+                FeatureImportance(**item) for item in metadata["global_importance"]
+            ]
+            return all_crops, global_importance
         except (FileNotFoundError, json.JSONDecodeError) as e:
-            print(f"Erreur lors du chargement de la métadonnée: {e}")
-            return []
+            raise RuntimeError(f"Erreur métadonnées : {e}") from e
 
     def _prepare_input(self, context: CropYieldContext, crops: List[str]) -> dict:
         """
@@ -57,7 +48,7 @@ class ONNXYieldPredictor(YieldPredictorPort):
             "crop": np.array([[crop] for crop in crops], dtype=object),
             "year": np.array([[context.year]] * n_rows, dtype=np.int64),
             "rainfall_mm": np.full((n_rows, 1), context.rainfall_mm, dtype=np.float32),
-            "pesticide_tons": np.full((n_rows, 1), context.pesticide_tons, dtype=np.float32),
+            "pesticides_tons": np.full((n_rows, 1), context.pesticides_tons, dtype=np.float32),
             "temperature_celcius": np.full(
                 (n_rows, 1), context.temperature_celcius, dtype=np.float32
             ),
@@ -70,8 +61,12 @@ class ONNXYieldPredictor(YieldPredictorPort):
         # onnxruntime renvoie une liste de outputs. Le 1er est la prédiction.
         prediction = self.session.run(None, inputs)[0]
 
+        # Nettoyage du scalaire (Correction du TypeError)
+        # On aplatit l'array et on prend le premier élément
+        val = float(np.array(prediction).item())
+
         return YieldResponse(
-            primary_prediction=PredictionResult(crop=crop, yield_val=float(prediction[0])),
+            primary_prediction=PredictionResult(crop=crop, yield_val=val),
             top_features=self.global_importance,
         )
 
@@ -82,10 +77,11 @@ class ONNXYieldPredictor(YieldPredictorPort):
         # UNE SEULE EXÉCUTION pour toutes les cultures (Gain de performance massif)
         all_preds = self.session.run(None, batch_inputs)[0]  # Shape (n_crops, 1)
 
-        recos = [
-            PredictionResult(crop=self.all_crops[i], yield_val=float(all_preds[i][0]))
-            for i in range(len(self.all_crops))
-        ]
+        recos = []
+        for i in range(len(self.all_crops)):
+            # Extraction propre de val peu importe la dimension de all_preds[i]
+            val = float(np.array(all_preds[i]).item())  # type:ignore
+            recos.append(PredictionResult(crop=self.all_crops[i], yield_val=val))
 
         # Tri et extraction du Top K
         sorted_results = sorted(recos, key=lambda x: x.yield_val, reverse=True)
