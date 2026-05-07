@@ -31,7 +31,9 @@ en Data Science et Production :
 
 # imports
 from functools import lru_cache
+from urllib.parse import quote_plus  # Import indispensable pour les caractères spéciaux
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # =====================================================================
@@ -70,6 +72,22 @@ class Settings(BaseSettings):
     # ================ Securité /rebuild =======================================
     # rebuild_api_key: str
     # """OBLIGATOIRE: CLEF API POUR POUVOIR INDEXER"""
+    # ================ Base de données =======================================
+    db_user: str = "postgres.iemmbmmrjvdsrtfjwhwc"
+    db_password: str = Field(validation_alias="sb_password")
+    db_host: str = "aws-1-eu-west-1.pooler.supabase.com"
+    db_port: str = "6543"
+    db_name: str = "postgres"
+
+    @property
+    def database_url(self) -> str:
+        """Génère dynamiquement l'URL de connexion sécurisée."""
+        encoded_pass = quote_plus(self.db_password)
+        options = "?sslmode=require" if "supabase.co" in self.db_host else ""
+        return (
+            f"postgresql+psycopg2://{self.db_user}:{encoded_pass}@{self.db_host}:"
+            f"{self.db_port}/{self.db_name}{options}"
+        )
 
     # ================ Serveur ===============================================
     # app_host: str = "0.0.0.0"
