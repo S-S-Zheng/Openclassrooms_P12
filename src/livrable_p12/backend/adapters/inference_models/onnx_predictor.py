@@ -1,4 +1,6 @@
+# Imports
 import json
+import logging
 from typing import List
 
 import numpy as np
@@ -12,8 +14,10 @@ from livrable_p12.backend.core.entities.models import (
 )
 from livrable_p12.backend.core.ports.yield_predictor import YieldPredictorPort
 
+logger = logging.getLogger(__name__)
 
-class ONNXYieldPredictor(YieldPredictorPort):
+
+class ONNXYieldPredictorAdapter(YieldPredictorPort):
     def __init__(self, model_path: str, metadata_path: str):
         # Chargement du runtime ONNX
         self.session = ort.InferenceSession(model_path, providers=["CPUExecutionProvider"])

@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from livrable_p12.backend.adapters.inference_models.onnx_predictor import ONNXYieldPredictor
+from livrable_p12.backend.adapters.inference_models.onnx_predictor import ONNXYieldPredictorAdapter
 
 
 @pytest.mark.unit
@@ -19,7 +19,7 @@ def test_onnx_predictor_initialization():
     if not os.path.exists(model_path) or not os.path.exists(metadata_path):
         pytest.skip("Fichier manquant pour le test")
 
-    predictor = ONNXYieldPredictor(model_path=model_path, metadata_path=metadata_path)
+    predictor = ONNXYieldPredictorAdapter(model_path=model_path, metadata_path=metadata_path)
 
     # Assertions
     assert predictor.all_crops is not None
@@ -39,7 +39,7 @@ def test_predict_yield_logic(predict_context):
     if not os.path.exists(model_path) or not os.path.exists(metadata_path):
         pytest.skip("Fichier manquant pour le test")
 
-    predictor = ONNXYieldPredictor(model_path=model_path, metadata_path=metadata_path)
+    predictor = ONNXYieldPredictorAdapter(model_path=model_path, metadata_path=metadata_path)
 
     # On force la culture pour ce test
     response = predictor.predict_yield(predict_context, crop="Wheat")
@@ -64,7 +64,7 @@ def test_get_recommendations_logic(recommendation_context):
     if not os.path.exists(model_path) or not os.path.exists(metadata_path):
         pytest.skip("Fichier manquant pour le test")
 
-    predictor = ONNXYieldPredictor(model_path=model_path, metadata_path=metadata_path)
+    predictor = ONNXYieldPredictorAdapter(model_path=model_path, metadata_path=metadata_path)
 
     # Test du batch inference (get_recommendations)
     top_k = 3

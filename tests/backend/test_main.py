@@ -10,6 +10,8 @@ Ce module valide les fonctionnalités de base de l'infrastructure FastAPI :
 
 # Imports
 
+from unittest.mock import MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -54,32 +56,41 @@ def test_root_redirects_to_docs(client):
 
 # =================== Lifespan =======================
 
-# plus de RAG que ML, settings et LLM
+
 # ---------------- Test du Lifespan réussi
-# @pytest.mark.integration
-# def test_lifespan_startup_success(fake_settings):
-#     """
-#     Valide l'initialisation du contexte de l'application.
+@pytest.mark.integration
+def test_lifespan_startup_success():
+    """
+    Valide l'initialisation du contexte de l'application.
 
-#     Vérifie que le mécanisme 'lifespan' a correctemt injecté ce qu'il faut dans les ``app.state``
-#     """
-#     app = create_app()
+    Vérifie que le mécanisme 'lifespan' a correctemt injecté ce qu'il faut dans les ``app.state``
+    """
+    # On mock les adaptateurs pour éviter de charger de vrais fichiers/réseau
+    with (
+        patch(
+            "livrable_p12.backend.adapters.inference_models.onnx_predictor.ONNXYieldPredictorAdapter"
+        ) as MockPredictor,
+        patch(
+            "livrable_p12.backend.adapters.llm_client.mistral_response.MistralResponseAdapter"
+        ) as MockLLM,
+    ):
+        # Configuration des mocks
+        MockPredictor.return_value = MagicMock()
+        MockLLM.return_value = MagicMock()
 
-#     # On mocke EventRAGPipeline pour éviter de charger les vrais modèles
-#     with patch("app.main.EventRAGPipeline") as MockRAG:
-#         # On simule un chargement d'index réussi
-#         MockRAG.return_value.load_index = AsyncMock(return_value=True)
-#         # TestClient déclenche le lifespan à l'entrée du bloc 'with'
-#         with TestClient(app) as client:
-#             assert client.app.state.index_ready is True  # type:ignore
-#             assert client.app.state.rag is not None  # type:ignore
-#             MockRAG.return_value.load_index.assert_called_once()
+        app = create_app()
+
+        # TestClient déclenche le lifespan à l'entrée du bloc 'with'
+        with TestClient(app):
+            # Vérification que l'état de l'application contient notre service
+            assert hasattr(app.state, "advisor_service")
+            assert app.state.advisor_service.predictor is not None
+            assert app.state.advisor_service.llm_engine is not None
 
 
 # ---------------- Test que le shutdown s'execute bien
 @pytest.mark.integration
-@pytest.mark.asyncio
-async def test_lifespan_shutdown(caplog):
+def test_lifespan_shutdown(caplog):
     """Vérifie que le log de nettoyage est présent à la fermeture."""
     app = create_app()
 

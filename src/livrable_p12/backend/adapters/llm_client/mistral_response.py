@@ -1,4 +1,6 @@
 # Imports
+import logging
+
 import yaml
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_mistralai import ChatMistralAI
@@ -6,6 +8,8 @@ from langchain_mistralai import ChatMistralAI
 from livrable_p12.backend.core.entities.models import YieldResponse
 from livrable_p12.backend.core.ports.llm_response import LLMResponsePort
 from livrable_p12.backend.settings import get_settings
+
+logger = logging.getLogger(__name__)
 
 
 class MistralResponseAdapter(LLMResponsePort):
