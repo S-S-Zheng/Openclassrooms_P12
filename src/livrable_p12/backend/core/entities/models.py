@@ -66,6 +66,7 @@ class YieldResponse(BaseModel):
 
     # Métadonnées
     datetime_utc: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    model_version: str = "agritech_answers_V1"
+    model_type: str = "XGBoost"
+    version: str = "agritech_V1"
 
     model_config = ConfigDict(from_attributes=True)
