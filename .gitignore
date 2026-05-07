@@ -55,15 +55,9 @@ docs/_build/
 # Ruff
 .ruff_cache
 
-# mlruns
-mlflow.db
-mlruns/
-
 # Autres
 htmlcov
 .coverage
-*.png
-*.csv
 datas/
 misc/
 notebooks/

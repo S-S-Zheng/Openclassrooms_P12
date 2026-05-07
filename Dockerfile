@@ -1,7 +1,9 @@
 # --- Étape 1 : Build (Installation des dépendances) ---
 FROM python:3.12-slim AS builder
 
-ENV POETRY_NO_INTERACTION=1 \
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_VIRTUALENVS_CREATE=true
 
@@ -37,35 +39,35 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Création de l'utilisateur non-root
-RUN useradd -m -u 1000 agriuser
+RUN useradd -m -u 1000 raguser
 
 # On définit le dossier de travail à la racine de l'application
 WORKDIR /app
 
-# On propage le PYTHONPATH pour que livrable_p12 soit reconnu
-ENV PATH="/app/.venv/bin:$PATH" \
-    PYTHONPATH="app/src" \
+ENV PATH="/app/.venv/bin:/home/raguser/.local/bin:${PATH}" \
+    PYTHONPATH="/app" \
     PYTHONUNBUFFERED=1
 
+# WORKDIR /app
 
 # On récupère l'environnement virtuel créé à l'étape précédente
-COPY --from=builder --chown=agriuser /app/.venv /app/.venv
+COPY --from=builder --chown=raguser /app/.venv /app/.venv
 # On copie le code source
-COPY --chown=agriuser . .
+COPY --chown=raguser . .
 
 # utilisateur non-root pour la sécurité
-USER agriuser
+USER raguser
 
 EXPOSE 8000
 
 # ---------------- EN LOCAL ----------------
 # # Commande de lancement
-# CMD python -m livrable_p12.db.create_db && \
-#     python -m livrable_p12.db.import_dataset_to_db && \
-#     uvicorn livrable_p12.main:app --host 0.0.0.0 --port 7860
+# CMD python -m app.db.create_db && \
+#     python -m app.db.import_dataset_to_db && \
+#     uvicorn app.main:app --host 0.0.0.0 --port 7860
 # On ne garde que le lancement de l'API.
 # ou
-CMD ["uvicorn", "livrable_p12.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 # ---------------- AVEC SUPABASE ---------------------
 # L'initialisation de la DB se fait une seule fois manuellement ou via une migration.
-# CMD ["uvicorn", "livrable_p12.main:app", "--host", "0.0.0.0", "--port", "7860"]
+# CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
