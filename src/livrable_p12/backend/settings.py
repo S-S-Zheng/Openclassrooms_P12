@@ -45,8 +45,8 @@ class Settings(BaseSettings):
     """
 
     # ===================== Paths ======================================
-    model_path: str = "datas/models/best_model.onnx"
-    metadata_path: str = "datas/models/shap/shap_metadata.json"
+    model_path: str = "datas/results/best_model/best_model.onnx"
+    metadata_path: str = "datas/results/shap/shap_metadata.json"
     prompt_config_path: str = "configs/prompts.yaml"
     # ======================== LLM =====================================
     mistral_base_url: str = "https://api.mistral.ai/v1"

@@ -1,5 +1,6 @@
 """
 Point d'entrée principal de l'application FastAPI.
+-----------
 
 Ce module assemble les différents composants de l'architecture :
 1. Orchestre le cycle de vie de l'application (Lifespan) pour le chargement du modèle.
@@ -23,6 +24,9 @@ from typing import AsyncGenerator
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import RedirectResponse
 
+from livrable_p12.backend.adapters.inference_models.onnx_predictor import ONNXYieldPredictorAdapter
+from livrable_p12.backend.adapters.llm_client.mistral_response import MistralResponseAdapter
+from livrable_p12.backend.core.services.advisor import AgriAdvisorService
 from livrable_p12.backend.settings import get_settings
 
 # from app.api.routes.ask import router as ask_router
@@ -54,9 +58,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     Actions au démarrage :
         - Cache les settings
-        - Instancie les ressources lourdes (ML et données)
-        - Injection de ``settings`` et ``predictor`` dans ``app.state`` pour un accès global
-            via les requêtes.
+        - Instancie les ressources lourdes (ML, données, services...)
+        - Injection de ``settings``, ``predictor_adapter``, ``llm_adapter`` et de
+            ``advisor_service`` dans ``app.state`` pour un accès global via les requêtes.
 
     Args:
         app (FastAPI): L'instance de l'application.
@@ -64,14 +68,29 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # ============== Phase de démarrage ================
     logger.info("Démarrage de l'API AgriTech - Chargement des ressources...")
+    try:
+        # -------------- Cache singleton --------------
+        settings = get_settings()
 
-    # Cache singleton
-    settings = get_settings()
-    # Instanciation du modele ML
-    # Instanciation du client LLM
+        # -------------- Instanciation des Adapters --------------
+        # modele ML
+        predictor_adapter = ONNXYieldPredictorAdapter(
+            model_path=settings.model_path, metadata_path=settings.metadata_path
+        )
+        # client LLM
+        llm_adapter = MistralResponseAdapter()
 
-    # Stockage settings et ML et LLM
-    app.state.settings = settings
+        # -------------- Instanciation des Services métier avec injection --------------
+        # Link ML et LLM
+        advisor_service = AgriAdvisorService(predictor=predictor_adapter, llm_engine=llm_adapter)
+
+        # -------------- Stockages dans le state --------------
+        app.state.settings = settings
+        app.state.advisor_service = advisor_service
+
+    except Exception as e:
+        logger.error(f"ÉCHEC CRITIQUE : {str(e)}")
+        raise RuntimeError("Impossible de démarrer l'API sans les ressources") from e
 
     yield  # le serveur accepte les requêtes à partir d'ici
 
@@ -80,11 +99,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 # ================= Montage des Routers ==================================
-# Instancie un router spécific pour les routes par défaut
+# -------------- Instancie un router spécific pour les routes par défaut --------------
 generic_router = APIRouter()
 
 
-# /health
+# -------------- /health --------------
 # Test auto CI/CD, debug rapide
 # FONDAMENTAL + NE DOIT JAMAIS DEPENDRE DE QUOIQUE CE SOIT
 @generic_router.get("/health", tags=["Health"])
@@ -101,7 +120,7 @@ async def healthcheck():
     return {"status": "ok"}
 
 
-# / (root)
+# -------------- / (root) --------------
 # Feedback immédiat, debug, UX minimale
 @generic_router.get("/", tags=["Root"], include_in_schema=False)
 async def root():
