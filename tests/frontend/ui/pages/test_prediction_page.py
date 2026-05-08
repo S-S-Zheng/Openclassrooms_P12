@@ -17,7 +17,7 @@ def test_prediction_page_calls_adapter(predict_context, sample_agri_result):
         context = predict_context.model_dump()
 
         # On exécute la fonction de rendu
-        render_prediction_page(mock_api, context)
+        render_prediction_page(mock_api, context, ["Wheat", "Maize", "Potatoes", "Soybeans"])
 
         # Assertions
         mock_api.get_prediction.assert_called_once()
@@ -31,7 +31,7 @@ def test_prediction_page_error_handling():
     with patch("streamlit.button", return_value=True), patch("streamlit.error") as mock_st_error:
         mock_api = MagicMock(spec=RequestAgriAPIAdapter)
         mock_api.get_prediction.side_effect = Exception("API Down")
-        render_prediction_page(mock_api, {"test": "data"})
+        render_prediction_page(mock_api, {"test": "data"}, ["Wheat", "Maize", "Potatoes"])
 
         # Assertions
         mock_st_error.assert_called_once()

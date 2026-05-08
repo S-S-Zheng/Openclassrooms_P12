@@ -4,6 +4,7 @@ import logging
 import streamlit as st
 
 from livrable_p12.frontend.adapters.api.requests_api import RequestAgriAPIAdapter
+from livrable_p12.frontend.core.services.crops_list import CropListService
 from livrable_p12.frontend.settings import get_settings
 from livrable_p12.frontend.ui.pages.prediction_page import render_prediction_page
 from livrable_p12.frontend.ui.pages.recommendation_page import render_recommandation_page
@@ -29,6 +30,15 @@ def get_api_adapter():
 
 
 adapter = get_api_adapter()
+
+
+@st.cache_data
+def load_crops_metadata() -> list:
+    service = CropListService(data_path=settings.crop_path)
+    return service.get_crops()
+
+
+supported_crops = load_crops_metadata()
 
 
 # =====================================================
@@ -60,7 +70,7 @@ def main():
     tab1, tab2 = st.tabs(["Prédiction", "Recommandation"])
 
     with tab1:
-        render_prediction_page(adapter, context)
+        render_prediction_page(adapter, context, supported_crops)
     with tab2:
         render_recommandation_page(adapter, context)
 
