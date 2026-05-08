@@ -34,6 +34,7 @@ from livrable_p12.backend.core.entities.models import (
     YieldResponse,
 )
 from livrable_p12.backend.main import app, create_app
+from livrable_p12.frontend.adapters.api.requests_api import RequestAgriAPIAdapter
 
 
 # ---------------------------- DATAS ----------------------------
@@ -78,6 +79,7 @@ def mock_yield_response():
             FeatureImportance(feature="crop", impact=5.0),
             FeatureImportance(feature="temperature_celsius", impact=1.5),
         ],
+        llm_analysis="Analyse des résultats ML par le LLM test.",
     )
 
 
@@ -189,3 +191,18 @@ def db_session_broken_for_tests(db_session_for_tests):
     # On "espionne" le rollback
     db_session_for_tests.rollback = MagicMock(wraps=db_session_for_tests.rollback)
     return db_session_for_tests
+
+
+# ================================================================================
+# ================================ FRONT END ================================================
+# ================================================================================
+
+# ---------------------------- DATAS ----------------------------
+
+# ---------------------------- API ----------------------------
+BASE_URL_TEST = "http://api_test:8000"
+
+
+@pytest.fixture
+def request_adapter():
+    return RequestAgriAPIAdapter(base_url=BASE_URL_TEST)

@@ -33,32 +33,27 @@ async def get_recommendation(
 
     try:
         # ML + LLM
-        (results, analysis), duration = await get_duration_async(advisor.llm_recommendation)(
-            payload, top_k=top_k
-        )
-        # On prépare l'objet de réponse final
-        response_data = YieldResponse(
-            recommendations=results.recommendations
-            if hasattr(results, "recommendations")
-            else results,
-            llm_analysis=analysis,
-            model_type=advisor.predictor.model_type,
-            version=settings.version,
-        )
+        (inference_result, analysis), duration = await get_duration_async(
+            advisor.llm_recommendation
+        )(payload, top_k=top_k)
+        # on complète inference_result
+        inference_result.llm_analysis = analysis
+        inference_result.version = settings.version
+        inference_result.model_type = advisor.predictor.model_type
         # Persistence
         await run_in_threadpool(
             SupabaseRepositoryAdapter.save_recommendation_trade,
             db=db,
             request_hash=generate_feature_hash(payload.model_dump()),
             context=payload,
-            results=response_data,
+            results=inference_result,
             analysis=analysis,
             duration=duration,
             version=settings.version,
-            model_type=advisor.predictor.model_type,
+            model_type=inference_result.model_type,
             status_code=200,
         )
-        return response_data
+        return inference_result
 
     except Exception as e:
         logger.error(f"Erreur Route Recommend: {e}")
