@@ -33,9 +33,12 @@ async def predict_yield(
 
     try:
         # ML
-        result, duration = await run_in_threadpool(
+        inference_result, duration = await run_in_threadpool(
             get_duration(advisor.predictor.predict_yield), payload, crop
         )
+        #  On complète la YieldResponse inference_result
+        inference_result.version = settings.version
+        inference_result.model_type = advisor.predictor.model_type
         # Hashing d'identification
         request_hash = generate_feature_hash(payload.model_dump())
         # Persistence
@@ -44,12 +47,12 @@ async def predict_yield(
             db=db,
             request_hash=request_hash,
             context=payload,
-            result=result,
+            result=inference_result,
             duration=duration,
             version=settings.version,
-            model_type=advisor.predictor.model_type,
+            model_type=inference_result.model_type,
         )
-        return result
+        return inference_result
 
     except Exception as e:
         logger.error(f"Erreur Route Predict: {e}")
