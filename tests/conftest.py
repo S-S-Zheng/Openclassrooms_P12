@@ -34,7 +34,12 @@ from livrable_p12.backend.core.entities.models import (
     YieldResponse,
 )
 from livrable_p12.backend.main import app, create_app
+
+# --------------------
 from livrable_p12.frontend.adapters.api.requests_api import RequestAgriAPIAdapter
+from livrable_p12.frontend.core.entities.models import AgriResult
+from livrable_p12.frontend.core.entities.models import FeatureImportance as FeatureImportanceFront
+from livrable_p12.frontend.core.entities.models import PredictionResult as PredictionResultFront
 
 
 # ---------------------------- DATAS ----------------------------
@@ -206,3 +211,23 @@ BASE_URL_TEST = "http://api_test:8000"
 @pytest.fixture
 def request_adapter():
     return RequestAgriAPIAdapter(base_url=BASE_URL_TEST)
+
+
+@pytest.fixture
+def sample_agri_result():
+    return AgriResult(
+        primary_prediction=PredictionResultFront(crop="Wheat", yield_val=25.0, unit="tons/ha"),
+        recommendations=[
+            PredictionResultFront(crop="Potatoes", yield_val=30.0, unit="tons/ha"),
+            PredictionResultFront(crop="Wheat", yield_val=20.0, unit="tons/ha"),
+            PredictionResultFront(crop="Maize", yield_val=10.0, unit="tons/ha"),
+        ],
+        top_features=[
+            FeatureImportanceFront(feature="crop", impact=10.0),
+            FeatureImportanceFront(feature="country", impact=6.0),
+            FeatureImportanceFront(feature="pesticides_tons", impact=5.8),
+            FeatureImportanceFront(feature="rainfall_mm", impact=2.8),
+            FeatureImportanceFront(feature="temperature_celsius", impact=0.8),
+        ],
+        llm_analysis="bla" * 10,
+    )

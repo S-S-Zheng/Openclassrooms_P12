@@ -47,15 +47,15 @@ def test_map_to_entity_empty_recommendations(request_adapter, mock_yield_respons
 @patch("requests.post")  # Rattaché à mock_post donc
 def test_get_prediction_success(mock_post, request_adapter, mock_yield_response, predict_context):
     """Vérifie le flux complet d'une requête de prédiction réussie."""
-    crop = "Potatoes"
     payload = predict_context.model_dump()
+    crop = payload.get("crop", "Maize")
     # Configuration du mock de 'requests'
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.json.return_value = mock_yield_response.model_dump()
     mock_post.return_value = mock_response
 
-    result = request_adapter.get_prediction(payload, crop)
+    result = request_adapter.get_prediction(payload)
 
     # Assertions
     # Vérification de l'appel réseau
