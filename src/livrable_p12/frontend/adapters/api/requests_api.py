@@ -25,8 +25,9 @@ class RequestAgriAPIAdapter:
             llm_analysis=data.get("llm_analysis"),
         )
 
-    def get_prediction(self, payload: dict, crop: str) -> AgriResult:
+    def get_prediction(self, payload: dict) -> AgriResult:
         """Route dédiée à la prédiction simple."""
+        crop = payload.get("crop", "Potatoes")
         response = requests.post(f"{self._base_url}/predict?crop={crop}", json=payload, timeout=15)
         response.raise_for_status()
 
