@@ -46,8 +46,10 @@ supported_crops = load_crops_metadata()
 def main():
     st.title("AgritechAnswersAssistant - Aide à la décision agricole")
     # Utilisation du session_state pour persister les résultats
-    if "last_result" not in st.session_state:
-        st.session_state.last_result = None
+    if "prediction_cache" not in st.session_state:
+        st.session_state.prediction_cache = None
+    if "reco_cache" not in st.session_state:
+        st.session_state.reco_cache = None
 
     # Sidebar pour le contexte (commune aux deux modes)
     with st.sidebar:

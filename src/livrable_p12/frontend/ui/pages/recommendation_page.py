@@ -16,19 +16,33 @@ def render_recommandation_page(request_adapter: RequestAgriAPIAdapter, context: 
         with st.spinner("Analyse des cultures offrant le meilleur rendement..."):
             try:
                 result = request_adapter.get_recommendation(context)
+                # SAUVEGARDE DANS LE CACHE
+                st.session_state.reco_cache = result
+                # if result.recommendations and result.top_features:
+                #     col1, col2 = st.columns(2)
 
-                if result.recommendations and result.top_features:
-                    col1, col2 = st.columns(2)
+                #     with col1:
+                #         plot_yield_comparison(result.recommendations)
 
-                    with col1:
-                        plot_yield_comparison(result.recommendations)
-
-                    with col2:
-                        plot_feature_importance(result.top_features)
-                # Analyse sémantique LLM
-                if result.llm_analysis:
-                    st.subheader("Analyse LLM")
-                    st.success(result.llm_analysis)
-
+                #     with col2:
+                #         plot_feature_importance(result.top_features)
+                # # Analyse sémantique LLM
+                # if result.llm_analysis:
+                #     st.subheader("Analyse LLM")
+                #     st.success(result.llm_analysis)
             except Exception as e:
                 st.error(f"Erreur technique : {e}")
+
+    # AFFICHAGE DU CACHE (si présent)
+    if st.session_state.reco_cache:
+        result = st.session_state.reco_cache
+        if result.recommendations and result.top_features:
+            col1, col2 = st.columns(2)
+            with col1:
+                plot_yield_comparison(result.recommendations)
+            with col2:
+                plot_feature_importance(result.top_features)
+        # Analyse sémantique LLM
+        if result.llm_analysis:
+            st.subheader("Analyse LLM")
+            st.success(result.llm_analysis)

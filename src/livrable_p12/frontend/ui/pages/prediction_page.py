@@ -27,23 +27,45 @@ def render_prediction_page(
         with st.spinner(f"Calcul du rendement pour : {crop_choice}..."):
             try:
                 result = request_adapter.get_prediction(payload)
-                if result.primary_prediction and result.top_features:
-                    # Métrique principale
-                    st.success("Selon le modèle, voici les résultats:")
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.metric(
-                            label=f"Rendement estimé ({result.primary_prediction.crop})",
-                            value=(
-                                f"{result.primary_prediction.yield_val:.2f} "
-                                f"{result.primary_prediction.unit}"
-                            ),
-                        )
-                    # # Visualisation de l'importance des caractéristiques
-                    # if result.top_features:
-                    with col2:
-                        plot_feature_importance(result.top_features)
-                else:
-                    st.warning("Aucune donnée de prédiction renvoyée par le modèle.")
+                # SAUVEGARDE DANS LE CACHE
+                st.session_state.prediction_cache = result
+                # if result.primary_prediction and result.top_features:
+                #     # Métrique principale
+                #     st.success("Selon le modèle, voici les résultats:")
+                #     col1, col2 = st.columns(2)
+                #     with col1:
+                #         st.metric(
+                #             label=f"Rendement estimé ({result.primary_prediction.crop})",
+                #             value=(
+                #                 f"{result.primary_prediction.yield_val:.2f} "
+                #                 f"{result.primary_prediction.unit}"
+                #             ),
+                #         )
+                #     # # Visualisation de l'importance des caractéristiques
+                #     # if result.top_features:
+                #     with col2:
+                #         plot_feature_importance(result.top_features)
+                # else:
+                #     st.warning("Aucune donnée de prédiction renvoyée par le modèle.")
             except Exception as e:
                 st.error(f"Une erreur est survenue lors de l'appel API : {e}")
+
+    # AFFICHAGE DU CACHE
+    if st.session_state.prediction_cache:
+        result = st.session_state.prediction_cache
+        if result.primary_prediction and result.top_features:
+            # Métrique principale
+            st.success("Résultats en mémoire :")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric(
+                    label=f"Rendement estimé ({result.primary_prediction.crop})",
+                    value=(
+                        f"{result.primary_prediction.yield_val:.2f} "
+                        f"{result.primary_prediction.unit}"
+                    ),
+                )
+            # # Visualisation de l'importance des caractéristiques
+            # if result.top_features:
+            with col2:
+                plot_feature_importance(result.top_features)
