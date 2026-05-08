@@ -60,6 +60,7 @@ class YieldResponse(BaseModel):
 
     primary_prediction: Optional[PredictionResult] = None
     recommendations: List[PredictionResult] = []
+    llm_analysis: Optional[str] = None
 
     # Explicabilité et Monitoring
     top_features: List[FeatureImportance] = []

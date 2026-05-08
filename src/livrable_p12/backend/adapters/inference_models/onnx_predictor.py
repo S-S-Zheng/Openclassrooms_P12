@@ -21,6 +21,11 @@ class ONNXYieldPredictorAdapter(YieldPredictorPort):
     def __init__(self, model_path: str, metadata_path: str):
         # Chargement du runtime ONNX
         self.session = ort.InferenceSession(model_path, providers=["CPUExecutionProvider"])
+        self.model_type = (
+            self.session.get_modelmeta().producer_name
+            if self.session.get_modelmeta().producer_name
+            else "Unknown"
+        )
         self.metadata_path = metadata_path
         # On injecte ici les résultats SHAP globale faites en amont et liste des cultures
         # Un seul appel, on dépaquette le tuple

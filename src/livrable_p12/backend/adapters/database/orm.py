@@ -42,6 +42,7 @@ class Prediction(Base):
     # Outputs
     yield_val = Column(Float)
     unit = Column(String(15))
+    top_features = Column(JSONB)  # feature importance globale
 
     # Relations
     # Crée une dépendance des ID avec la table monitoring via request_hash (permet la jointure)

@@ -101,6 +101,7 @@ class SupabaseRepositoryAdapter:
                 temp_anomaly=data.get("temp_anomaly"),
                 yield_val=result.primary_prediction.yield_val,  # type:ignore
                 unit=result.primary_prediction.unit,  # type:ignore
+                top_features=[feature.model_dump() for feature in result.top_features],
             )
             # Persistance atomique
             db.add_all([monitoring_log, prediction_entry])

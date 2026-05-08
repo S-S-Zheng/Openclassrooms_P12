@@ -24,14 +24,12 @@ from typing import AsyncGenerator
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import RedirectResponse
 
+from livrable_p12.backend.adapters.api.prediction import router as prediction_router
+from livrable_p12.backend.adapters.api.recommendation import router as recommendation_router
 from livrable_p12.backend.adapters.inference_models.onnx_predictor import ONNXYieldPredictorAdapter
 from livrable_p12.backend.adapters.llm_client.mistral_response import MistralResponseAdapter
 from livrable_p12.backend.core.services.advisor import AgriAdvisorService
 from livrable_p12.backend.settings import get_settings
-
-# from app.api.routes.ask import router as ask_router
-# from app.api.routes.rebuild import router as rebuild_router
-# from app.rag.rag_pipeline import EventRAGPipeline
 
 # ======================= Logging configuration =======================
 logging.basicConfig(
@@ -164,8 +162,8 @@ def create_app() -> FastAPI:
 
     # Applique la configuration des routes
     app.include_router(generic_router)
-    # app.include_router(ask_router)
-    # app.include_router(rebuild_router)
+    app.include_router(prediction_router)
+    app.include_router(recommendation_router)
 
     return app
 
