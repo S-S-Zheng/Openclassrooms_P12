@@ -83,7 +83,7 @@ def mock_yield_response():
 
 # ---------------------------- API ----------------------------
 @pytest.fixture
-def client():
+def client(db_session_for_tests):
     """
     Fournit un TestClient FastAPI configuré avec une session de base de données de test.
     Gère le cycle de vie (lifespan) de l'application pour chaque test.
@@ -100,9 +100,12 @@ def client():
         TestClient: Une instance de client capable d'effectuer des requêtes (GET, POST, etc.).
     """
     app = create_app()
+    # override DIRECTEMENT sur cette instance
+    app.dependency_overrides[get_db] = lambda: db_session_for_tests
 
     with TestClient(app) as test_client:
         yield test_client
+    app.dependency_overrides.clear()
 
 
 # ---------------------------- DB ----------------------------
