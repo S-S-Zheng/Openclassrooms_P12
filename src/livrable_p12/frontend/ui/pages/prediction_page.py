@@ -5,14 +5,18 @@ from livrable_p12.frontend.adapters.api.requests_api import RequestAgriAPIAdapte
 from livrable_p12.frontend.ui.visuals.visualization import plot_feature_importance
 
 
-def render_prediction_page(request_adapter: RequestAgriAPIAdapter, context: dict):
+def render_prediction_page(
+    request_adapter: RequestAgriAPIAdapter, context: dict, available_crops: list
+):
     """Affiche l'interface de prédiction simple."""
     st.header("Prédiction du rendement d'une culture suivant les conditions pedoclimatiques.")
 
     # Champ spécifique à la prédiction (la culture)
     crop_choice = st.selectbox(
         "Sélectionnez la culture à analyser",
-        ["Wheat", "Maize", "Potatoes", "Soybeans"],
+        # ["Wheat", "Maize", "Potatoes", "Soybeans"],
+        options=available_crops,
+        index=0,
         help="Choisissez la culture dont la prédiction de rendement vous interesserait.",
     )
 

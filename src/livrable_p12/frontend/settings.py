@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     """
 
     # ===================== Paths ======================================
-
+    crop_path: str = "datas/results/shap/shap_metadatas.json"
     # ================ Serveur ===============================================
     app_host: str = "localhost"
     app_port: int = 8000
