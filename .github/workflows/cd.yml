@@ -37,6 +37,7 @@ jobs:
         uses: actions/checkout@v4
         # Clone tout l'historique du dépôt
         with:
+          fetch-depth: 0
           # telecharge le vrai fichier "lourd" et pas le pointeur LFS
           lfs: true
 
