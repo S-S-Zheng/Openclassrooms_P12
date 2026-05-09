@@ -22,45 +22,54 @@
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Sommaire</summary>
-  <ol>
-    <li><a href="#Overview">Overview</a></li>
-    <li><a href="#Partie-1">Partie 1</a></li>
+<ol>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#fonctionnalités">Fonctionnalités</a></li>
+    <li><a href="#prérequis">Prérequis</a></li>
+    <li>
+      <a href="#installation">Installation</a>
       <ul>
-        <li><a href="#Contexte-et-enjeux">Contexte et enjeux</a></li>
-        <li><a href="#Plus-value-IA">Plus-value IA</a></li>
-        <li><a href="#Approche-technique-et-données-du-PoC">Approche technique et données du PoC</a></li>
-        <li><a href="#Critères-de-validation-du-PoC">Critères de validation du PoC</a></li>
-        <li><a href="#Timeline-et-resources">Timeline et resources</a></li>
+        <li><a href="#localement">Configuration Locale</a></li>
+        <li><a href="#distance">Configuration Distante</a></li>
       </ul>
-    <li><a href="#Partie-2">Partie 2</a></li>
+    </li>
+    <li><a href="#structure-du-projet">Structure du Projet</a></li>
+    <li>
+      <a href="#lancer-les-services">Lancer les services</a>
       <ul>
-        <li><a href="#System-Design">System Design</a></li>
-        <li><a href="#Timeline-de-livraison-de-loutil-de-recommandation">Timeline de livraison de l'outil de recommandation</a></li>
-        <li><a href="#Dimensionnement-coût-projet">Dimensionnement coût projet</a></li>
+        <li><a href="#backend-fastapi-swagger">Backend FastAPI</a></li>
+        <li><a href="#frontend-streamlit">Frontend Streamlit</a></li>
+        <li><a href="#frontend-and-backend">Lancement Docker</a></li>
       </ul>
-    <li><a href="#Partie-3">Partie 3</a></li>
-      <ul>
-        <li><a href="#Anticiper-autour-du-traitement-des-données-personnelles">Anticiper autour du traitement des données personnelles</a></li>
-      </ul>
+    </li>
+    <li><a href="#utilisations">Exemples d'utilisation (API)</a></li>
+    <li><a href="#deploiement">Déploiement</a></li>
+    <li><a href="#license">License</a></li>
   </ol>
 </details>
 
 ## Overview
 
-Vous êtes **Data Scientist Machine Learning junior** dans l’entreprise **Agritech Answers**, spécialisée dans l’**optimisation agricole et l’innovation agrotechnologique**.
-
 **L'objectif est de développer une application web simple et intuitive pour aider nos clients agriculteurs à prendre de meilleures décisions**.
+
+- **Eco-conception et Performance** : L'application utilise le format ONNX, permettant des prédictions ultra-rapides et une consommation de ressources minimale, idéale pour un hébergement green et gratuit.
+
+- **Transparence de l'IA (XAI)** : L'outil ne se contente pas de prédire ; il explique ses décisions en affichant l'importance des variables (via SHAP), permettant à l'agriculteur de comprendre l'influence de la température ou des pesticides sur son rendement.
+
+- **Architecture Robuste**: Conçu selon les principes de l'Architecture Hexagonale, le système est modulaire : on peut changer de base de données ou de modèle d'IA sans réécrire l'application.
 
 ## Fonctionnalités
 
 - **Fonction de prédiction** : Permettre à un utilisateur de sélectionner une culture spécifique, de renseigner les conditions de sa parcelle (température, usage de pesticides, etc.) et d'obtenir une estimation chiffrée du rendement attendu.
-- **Fonction de recommandation** : L'utilisateur renseigne uniquement les conditions de sa parcelle, et l'application lui recommande la culture la plus rentable en simulant le rendement pour toutes les cultures possibles et en affichant un classement.
+- **Fonction de recommandation** : L'utilisateur renseigne uniquement les conditions de sa parcelle, et l'application lui recommande la culture la plus rentable en simulant le rendement pour toutes les cultures possibles et en affichant un classement avec une analyse sémantique faite par un LLM.
 
 ## Prérequis
 
 - Python 3.12+
 - Clef API Mistral (obtenue sur [console.mistral.ai](https://console.mistral.ai/))
-- Créer un compte logfire (eventuellement clef API) : [logfire](https://logfire-eu.pydantic.dev/)
+- Se créer un espace sur HuggingFace (obtenue sur [huggingface](https://huggingface.co/))
+- Se créer une base Supabase (obtenue sur [supabase](https://supabase.com/))
+- Se créer une base Postgres locale
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -96,7 +105,7 @@ Vous êtes **Data Scientist Machine Learning junior** dans l’entreprise **Agri
     # Configurer les variables d'environnement
     cp .env.example .env
     # Éditer .env
-    # Variables (filtres...) ET MISTRAL_API_KEY
+    # Variables (filtres...)
     ```
 
 4. **Configurer la clé API**
@@ -105,237 +114,238 @@ Vous êtes **Data Scientist Machine Learning junior** dans l’entreprise **Agri
 
     ```bash
     MISTRAL_API_KEY=votre_clé_api_mistral
+    HUGGINGFACE_TOKEN=votre_clé_api_huggingface
+    POSTGRES_PASSWORD=votre_clé_api_postgres
+    SB_PASSWORD=votre_clé_api_supabase
     ```
 
-5. **Logfire quickstart**
+### Localement
+
+1. **Création d'une base PostgreSQL**
+
+Pour exécuter les tests d'intégration, vous devez disposer d'une instance PostgreSQL locale.
+
+  1. *Installation* :
+
+      ```bash
+      sudo apt install postgresql postgresql-contrib
+      ```
+
+  2. *Accès au terminal psql* :
+
+      ```bash
+      sudo -u postgres psql
+      ```
+
+  3. *Initialisation de la DB* :
+
+      ```sql
+      CREATE DATABASE ml_test_db;
+      CREATE USER test_user WITH PASSWORD 'votre_mot_de_passe';
+      GRANT ALL PRIVILEGES ON DATABASE ml_test_db TO test_user;
+      ```
+
+### Distance
+
+- **Création d'un dépôt distant GitHub** :
+
+    Créez un compte sur [GitHub](https://github.com/), créez un nouveau dépôt vide et connectez votre projet local :
 
     ```bash
-    # Install SDK
-    poetry add logfire
-
-    # En environnement de dev:
-    # Authentification de l'environnement local
-    poetry run logfire auth
-    # Set up du dossier logfire
-    poetry run logfire projects use nom-dossier-logfire
-
-    # En environnement de prod:
-    export LOGFIRE_TOKEN='__YOUR_LOGFIRE_WRITE_TOKEN__'
+    git remote add origin https://github.com/votre-user/votre-projet.git
+    git push -u origin main
     ```
+
+    Pour les secrets, allez dans Settings > Secrets and variables > Actions pour ajouter vos secrets (HUGGINGFACE_TOKEN, SB_HOST, etc.).
+
+- **Création d'un espace sur Hugging Face**:
+
+    Créez un compte sur Hugging Face, cliquez sur "New Space", choisissez le SDK Docker et un nom pour votre projet.Une fois l'espace créé, dans vos paramètres de profil, créez un "Write Token" pour permettre à GitHub de pousser le code.
+
+    Concernant les secrets, allez dans les paramètres de votre Space, ajoutez les variables d'environnement de votre base de données Supabase pour que l'API puisse s'y connecter au runtime.
+
+- **Création d'une base PostgreSQL Supabase**:
+
+    Créez un compte et un projet sur Supabase puis cliquez sur le bouton Connect sur la barre de tâche supérieure à côté du nom de la base pour récupérez les informations de connexion. A noté que vous pourrez reset votre mot de passe de la base si celui-ci ne vous convient plus dans Project Settings > Database.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Structure du projet
 
+Le projet suit une architecture découplée pour garantir la scalabilité et la maintenabilité :
+
+**Backend (FastAPI)** : API de service exposant les prédictions du modèle XGBoost converti en format ONNX (interopérabilité et performance).
+
+**Frontend (Streamlit)** : Interface utilisateur interactive permettant de simuler des scénarios climatiques et de visualiser l'importance des caractéristiques.
+
+**Core (Architecture Hexagonale)** : Logique métier isolée des frameworks techniques.
+
 ```text
 .
-├── notebooks                  # Travaux d'exploration et brouillons
-├── datas                      # Données d'entrée et de sortie
-├── src/
-│   └── livrable_p12/          # Package principal
-│       ├── backend
-│       │   ├── main.py            # Point d'entrée FastAPI
-│       │   ├── core/              # Logique métier (Domaine)
-│       │   │   ├── entities/      # Modèles de données purs
-│       │   │   └── ports/         # Interfaces (Abstractions)
-│       │   ├── adapters/          # Implémentations techniques
-│       │   │   ├── api/           # Routes et dépendances FastAPI
-│       │   │   ├── repository/    # Client Supabase
-│       │   │   ├── inference_models/    # Modèles d'inférence (ONNX Runtime)
-│       │   │   └── llm_client/    # Client Mistral (LangChain)
-│       │   └── infrastructure/    # Configuration Logfire & Environnement
-│       └── frontend
-│           ├── main.py                # Configuration de la page et navigation (tabs)
-│           ├── modules/
-│           │   ├── ui_prediction.py   # Logique d'affichage de l'onglet Prédiction
-│           │   ├── ui_recommandation.py # Logique d'affichage de l'onglet Recommandation
-│           │   └── components.py      # Composants réutilisables (headers, footers, tooltips)
-│           └── utils/
-│               ├── api_client.py      # Fonctions requests FastAPI (gestion erreur 404/500)
-│               └── data_processors.py # Formatage des données API pour Plotly
-├── tests/                     # Suite de tests automatisée (Pytest)
-├── coverage.ini               # Configuration du rapport de couverture
-├── Dockerfile                 # Instructions de conteneurisation
-├── docker-compose.yml         # Constructeur du docker
-├── .gitignore                 # Elements à ignorer pour le dépôt GitHub
-├── .dockerignore              # Elements à ignorer pour le/les conteneurs
-├── .env.example               # Exemple mini du .env
-├── LICENSE                    # Licence MIT du projet
-├── pytest.ini                 # Configuration globale de l'env de test
-├── README.md                  # Documentation principale du projet
-└── pyproject.toml             # Dépendances complètes
+├── configs
+│   └── prompts.yaml                            # Prompts pour le LLM
+├── coverage.ini                                # Sources à exclure des tests de couverture
+├── datas                                       # Données d'entrée et de sortie
+│   ├── raw
+│   └── results
+│       ├── best_model
+│       │   └── best_model.onnx                 # Modele ML
+│       └── shap
+│           └── shap_metadata.json              # métadonnées issue de SHAP
+├── deploy_hf.sh                                # Shell pour déploiement sur HuggingFace
+├── docker_start.sh                             # Shell pour init back et front (FastAPI/Streamlit)
+├── coverage.ini                                # Configuration du rapport de couverture
+├── Dockerfile                                  # Instructions de conteneurisation
+├── docker-compose.yml                          # Constructeur du docker
+├── .gitignore                                  # Elements à ignorer pour le dépôt GitHub
+├── .dockerignore                               # Elements à ignorer pour le/les conteneurs
+├── .env.example                                # Exemple mini du .env
+├── LICENSE                                     # Licence MIT du projet
+├── pytest.ini                                  # Configuration globale de l'env de test
+├── README.md                                   # Documentation principale du projet
+├── mlflow.db                                   # DB MLFlow
+├── mlruns                                      # Résultats MLFlow
+├── notebooks                                   # Travaux d'exploration et brouillons
+├── poetry.lock                 
+├── poetry.toml
+├── pyproject.toml                              # Dépendances complètes
+├── smoke_test.py                               # Smoke Test
+├── src                                         # Src Layout
+│   └── livrable_p12                            # Package principal
+│       ├── backend                             # --------- Backend ---------
+│       │   ├── adapters                        # Implémentations techniques
+│       │   │   ├── api                         # Routes et dépendances FastAPI
+│       │   │   │   ├── prediction.py           # Logique de prédiction simple
+│       │   │   │   └── recommendation.py       # Logique de recommandation
+│       │   │   ├── database                    # Client Supabase
+│       │   │   │   ├── base.py                 # Base
+│       │   │   │   ├── connection.py           # Moteur DB
+│       │   │   │   ├── create_db.py            # Instancie/Clean les tables
+│       │   │   │   ├── orm.py                  # Schemas des tables
+│       │   │   │   └── supabase_repository.py  # Adaptateur Supabase
+│       │   │   ├── inference_models            # Modèles d'inférence (ONNX Runtime)
+│       │   │   │   └── onnx_predictor.py       # Adaptateur ONNX
+│       │   │   └── llm_client                  # Client Mistral (LangChain)
+│       │   │       └── mistral_response.py     # Adaptateur Mistral
+│       │   ├── core                            # Logique métier (Domaine)
+│       │   │   ├── entities                    # Modèles de données purs
+│       │   │   │   └── models.py               # Données pures métier
+│       │   │   ├── ports                       # Interfaces (Abstractions)
+│       │   │   │   ├── llm_response.py         # Port LLM
+│       │   │   │   └── yield_predictor.py      # Port ML
+│       │   │   └── services
+│       │   │       └── advisor.py              # Service de connexion ML-LLM
+│       │   ├── main.py                         # Point d'entrée FastAPI
+│       │   ├── settings.py                     # Settings du backend
+│       │   └── utils
+│       └── frontend                            # --------- Frontend ---------
+│           ├── adapters
+│           │   └── api
+│           │       └── requests_api.py         # Fonctions requests FastAPI
+│           ├── core
+│           │   ├── entities
+│           │   │   └── models.py               # Entités
+│           │   └── services
+│           │       └── crops_list.py           # Service de dynamisation des cultures
+│           ├── main.py                         # Configuration de la page et navigation
+│           ├── settings.py                     # Settings pour frontend
+│           ├── ui                              # UI/UX
+│           │   ├── pages
+│           │   │   ├── prediction_page.py      # Logique d'affichage de l'onglet Prédiction
+│           │   │   └── recommendation_page.py  # Logique d'affichage de l'onglet Recommandation
+│           │   └── visuals
+│           │       └── visualization.py        # Logique des graphiques
+│           └── utils
+└── tests                                       # Suite de tests automatisée (Pytest)
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- 
-## Utilisation
+## Lancer les services
 
-### Ajouter des documents
+Par défaut et dans le CI/CD, on a programmé de sorte que le système soit conteneurisé sur HuggingFace cependant, on peut tout à fait les utilisé localement.
 
-Placez vos documents dans le dossier `datas/raw/` à la racine.
+### Backend FastAPI Swagger
 
-### Indexer les documents
-
-Exécutez le script ``ìndexer.py`` pour traiter les documents et créer l'index FAISS :
+L'API est motorisée par FastAPI et Uvicorn. Pour démarrer le service :
 
 ```bash
-# En vous plaçant à la racine du projet
-python CLI/indexer.py
+# Depuis la racine du projet
+uvicorn livrable_p12.backend.main:app --reload
 ```
 
-Le workflow du script est le suivant :
+Le serveur sera accessible sur `http://localhost:8000`
 
-1. *Initialisation et Récupération des Arguments*
-    Le script démarre en récupérant les paramètres d'entrée via argparse :
-    - Le répertoire source des documents (--input-dir).
-    - Une éventuelle URL de téléchargement (--data-url).
-    - Configuration du logging pour suivre l'avancement en temps réel.
+### Frontend Streamlit
 
-2. *Extraction de la Donnée (Extraction)*
-    Le script gère l'arrivée des fichiers :
-    - Si une URL est fournie, le fichier est téléchargé, dézippé et stocké dans le répertoire d'entrée.
-    - Si aucune URL n'est fournie : Le script bascule sur l'utilisation des fichiers locaux déjà présents dans le dossier.
-
-3. *Parsing et Gestion du Cache (Transformation)*
-    Vérification du cache (évite de refaire l'OCR). Si le cache est vide, lit et parse les données non-structurées, les transforme en "documents" bruts et une copie est sauvegardée au cas où.
-
-4. *Nettoyage Sémantique (Processing)*
-    Une fois le texte extrait, il est nettoyé pour améliorer la qualité différents patterns détéctés et ``blacklist.txt`` pour supprimer le bruit (mentions inutiles, headers répétitifs, mots spécifiques). Les documents sont "titrés" ou restructurés pour que l'index contienne une donnée sémantiquement riche.
-
-5. *Construction de l'Index Vectoriel (Loading)*
-    Le script appel ensuite ``VectorStoreManager``, pour vectoriser, créer l'index et persister sur le disque.
-
-### Remplir la base de données
-
-Exécutez le script ``load_excel_to_db.py`` pour remplir la base de données.
+L'interface API Utilisateur se fera sur Streamlit. Pour démarrer le service :
 
 ```bash
-# En vous plaçant à la racine du projet
-python CLI/load_excel_to_db.py
+# Depuis la racine du projet
+streamlit run livrable_p12/frontend/main.py
 ```
 
-Workflow du script :
+Le serveur sera accessible sur `http://localhost:8501`
 
-1. *Initialisation et Reset de la Base*
-    Le script appelle ``init_db(reset_tables=True)`` pour supprimer les anciennes tables et recréer un schéma SQL vierge, garantissant l'idempotence du processus.
+### Frontend et backend
 
-2. *Extraction et Nettoyage (Pandas)*
-    Lecture des feuilles Excel. Le script nettoie les en-têtes, supprime les colonnes "fantômes" (Unnamed) et applique un strip() sur les données textuelles.
-
-3. *Validation et Normalisation (Pydantic)*
-    Chaque ligne est validée par NBAInputSchema ou TeamInputSchema. Cette étape assure l'intégrité des types et gère la conversion des valeurs (ex: NaN vers None).
-
-4. *Ingestion et agregation des tables*
-    Remplis les tables ``Player``, ``Stat``, ``Team`` et réalise certaine agrégation.
-
-5. *Validation de la Transaction*
-    Le script effectue un ``commit()`` final pour persister les données. En cas d'erreur, un ``rollback()`` est déclenché pour prévenir toute corruption de la base.
-
-### Lancer l'évaluation RAGAS
-
-Exécutez le script ``evaluate_ragas.py`` pour lancer une évaluation RAGAS du RAG.
+- **Prérequis**: Docker & Docker Compose, un fichier .env (voir .env.example)
+- Pour démarrer l'ensemble de l'écosystème (API + Interface) :
 
 ```bash
-# En vous plaçant à la racine du projet
-python CLI/evaluate_ragas.py
+docker compose up --build
 ```
 
-L'évaluateur va regarder les métriques suivantes:
-
-- *Faithfulness (Fidélité)*
-    Mesure si la réponse de l'IA est factuellement soutenue par les documents extraits (détection d'hallucinations).
-
-- *Answer Relevancy (Pertinence)*
-    Évalue si la réponse reste pertinente par rapport à la question posée.
-
-- *Context Recall (Rappel du Contexte)*
-    Vérifie si toutes les informations nécessaires pour répondre (définies dans la "Ground Truth") sont bien présentes dans les documents extraits de la base vectorielle.
-
-Workflow du script :
-
-1. *Initialisation de l'Agent*
-    Le script encapsule l'Agent NBA dans un ``RAGPrototypeWrapper`` pour isoler les composants de recherche (contexte) et de génération (réponse).
-
-2. *Inférence sur Dataset de Test*
-    Charge un fichier JSON de Q\&A ``qa_pairs.json``. L'agent traite chaque question pour générer une réponse réelle et extraire les contextes associés.
-
-3. *Configuration du Juge LLM*
-    Utilisation de Mistral-Small comme "Juge" pour attribuer des scores.
-
-4. *Calcul des Scores*
-    Le script itère sur le dataset, calcule les métriques et gère les pauses (async sleep) pour respecter les limites de l'API (Rate Limiting).
-
-5. *Rapport et Sauvegarde*
-    Génère un scoring en std et une sauvegarde des résultats dans ``ragas.json`` pour analyse ultérieure.
-
-### Lancer l'application
-
-```bash
-# A la racine du projet
-streamlit run src/livrable_p10/app/main.py
-```
-
-L'application sera accessible à l'adresse <http://localhost:8501> dans votre navigateur.
+[Interface Web](http://localhost:8501)
+[Documentation API](http://localhost:8000/docs)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Modules principaux
+## Utilisations
 
-### Orchestration
+### Prédiction simple
 
-``src/livrable_p10/app/agents/nba_agent.py``
+Estime le rendement pour une culture spécifique selon les conditions climatiques.
 
-Cerveau de l'application basé sur Pydantic AI :
+```bash
+curl -X POST "http://localhost:8000/predict?crop=Maize" \
+     -H "Content-Type: application/json" \
+     -d '{"country": "France", "year": 2024, "rainfall_mm": 1000, "temperature_celcius": 18, "pesticides_tons": 500, "temp_anomaly": 0.5}'
+```
 
-1. *Aiguillage des outils*
-    Détermine s'il doit utiliser l'outil SQL ``ask_database`` ou l'outil Sémantique ``ask_index``
+### Recommandation
 
-2. *Mémoire court terme*
-    Gère l'historique de la conversation pour le contexte.
+Identifie les k meilleures cultures en terme de rendement à partir de conditions pedoclimatique données et fournit une explication agronomique via LLM.
 
-### Outil SQL
-
-``src/livrable_p10/app/tools/sql/sql_tool.py & sql_pipeline.py``
-
-Transforme le langage naturel en requêtes complexes :
-
-1. *NLP -> SQL*
-    Traduit les questions en requêtes SQLite via Mistral.
-
-2. *Sécurité \& Nettoyage*
-    Mode de lecture seule, validation pydantic, limite les instructions.
-
-3. *Monitoring*
-    Remplit la table ``Report`` pour suivre les requêtes.
-
-4. *Exécution*
-    Récupère les statistiques brutes (points, rebonds, victoires) en base.
-
-### Outil sémantique
-
-``src/livrable_p10/app/tools/semantic/vector_store.py``
-
-Gère toutes les fonctionnalités liées à l'index :
-
-1. *Charge et chunk*
-    A l'instanciation de ``VectoreStoreManager``, va tenter de charger et chunker les documents brutes.
-
-2. *Embedding et persistence*
-    Utilise un modèle HuggingFace local pour transformer le texte en vecteurs. ``build_index()`` va transformer en objet document puis splitter, emmbeder, et sauvegarder les vecteurs générés par les documents.
-
-3. *Recherche*
-    Effectue une recherche de similarité pour extraire les passages les plus pertinents via sa méthode ``search()``.
+```bash
+curl -X POST "http://localhost:8000/recommend?top_k=3" \
+     -H "Content-Type: application/json" \
+     -d '{"country": "France", "year": 2024, "rainfall_mm": 1000, "temperature_celcius": 18, "pesticides_tons": 500, "temp_anomaly": 0.5}'
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Personnalisation
+## Deploiement
 
-Vous pouvez personnaliser l'application en modifiant les paramètres dans `config.py` :
+Le déploiement est entièrement automatisé via une architecture MLOps :
 
-- Modèles Mistral utilisés
-- Des hyperparamètres de FAISS et du LLM comme la température, le chunking, le nombre de contexte à fournir au LLM
-- Les chemins de lecture et de persistence
+- **Hook pré-commit (filtre local)**:
+  Le hook de pré-commit s'exécute automatiquement sur ta machine à chaque tentative de git commit. Son rôle est de s'assurer qu'aucun code "sale" ou mal formaté ne quitte ton poste de travail.
+
+- **CI (GitHub Actions)** :
+  Chaque modification push/pull request sur la branche main déclenche automatiquement le pipeline.
+  Il est constitué de deux jobs:
+  
+  *lint* : Vérifie la conformité du code en passant par Ruff.
+
+  *tests* : Ne se lance que si le linting est validé, ce job a pour fonction de tester le comportement unitaire et fonctionnel du code. Il lance un conteneur éphemère PostgreSQL 15 de test et execute pytest en suivant les directives du pytest.ini. Il fera en premier lieu un `Smoke test` pour vérifier que le modèle se charge correctement et est utilisable.
+
+- **CD (GitHub Actions)** :
+  Le déploiement ne se lance que si le pipeline de CI a réussi (workflow_run success). Il est restreint à la branche main pour garantir que seul le code de production est déployé.
+
+  Au lieu de pousser tout le dépôt (ce qui serait lourd et risqué), le script sélectionne les fichiers afin de garantir une conteneurisation optimisée, il force aussi le push au sein de HF en créant une branche orpheline à cause de soucis avec les fichiers `LFS`. La construction de HF oblige aussi à mettre front et back ensemble.
+
+  Le script génère aussi dynamiquement un README.md avec un bloc YAML (frontmatter). C'est ce fichier qui configure Hugging Face (SDK Docker, port 7860, version Python, licence).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -343,4 +353,4 @@ Vous pouvez personnaliser l'application en modifiant les paramètres dans `confi
 
 Distributed under the project_license. See `LICENSE.txt` for more information.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p> -->
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
