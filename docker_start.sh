@@ -3,7 +3,7 @@
 # Initialisation de la base de données (Création des tables si absentes)
 echo "Vérification et création du schéma de base de données..."
 # On utilise python directement pour lancer le module de création
-python -m livrable_p12.db.create_db
+python -m livrable_p12.backend.adapters.database.create_db
 
 # Démarrer le Backend en arrière-plan (Port 8000)
 echo "Démarrage du Backend..."

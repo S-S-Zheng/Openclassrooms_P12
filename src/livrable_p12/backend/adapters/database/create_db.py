@@ -9,20 +9,16 @@ réinitialisation (drop & create) pour les environnements de test ou de dévelop
 # Placer dans app/ permet d'importer facilement models_db et database pour créer les tables.
 
 # imports
-import sys
-from pathlib import Path
-
-# Ajout du dossier racine au path pour permettre les imports relatifs
-root_path = Path(__file__).resolve().parent.parent
-sys.path.append(str(root_path))
 
 # IMPORT OBLIGATOIRE des modèles pour l'enregistrement des métadonnées
 # Même si non utilisés directement, cela permet à Base.metadata de les "voir" et d'initier le lien
 # Sinon le registre db restera vide et metadata.create_all ne fera rien et sans lever d'erreur!
+# --- AJOUT CRITIQUE ---
+# Importer le module orm pour que les classes (Monitoring, Prediction, etc.)
+# soient enregistrées dans Base.metadata
+from livrable_p12.backend.adapters.database import orm  # noqa: F401
 from livrable_p12.backend.adapters.database.base import Base  # noqa: E402 #
 from livrable_p12.backend.adapters.database.connection import base_engine  # noqa: E402
-
-# Nécéssaires  pour que SQLAlchemy "découvre" les tables
 
 # ====================== Création de la DB ============================
 
