@@ -116,7 +116,7 @@ def client(db_session_for_tests):
 
 
 # ---------------------------- DB ----------------------------
-DATABASE_URL_TEST = "postgresql+psycopg2://postgres:12345@localhost:5432/test_db"
+DATABASE_URL_TEST = "postgresql+psycopg2://postgres:12345@localhost:5432/db_test"
 
 
 @pytest.fixture(scope="session")

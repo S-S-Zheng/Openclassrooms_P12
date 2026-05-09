@@ -1,0 +1,44 @@
+{
+    "all_crops": [
+        "Potatoes",
+        "Maize",
+        "Wheat",
+        "Rice",
+        "paddy",
+        "Sorghum",
+        "Soybeans",
+        "Sweet potatoes",
+        "Cassava",
+        "Yams"
+    ],
+    "global_importance": [
+        {
+            "feature": "crop",
+            "impact": 6.9257
+        },
+        {
+            "feature": "country",
+            "impact": 2.34
+        },
+        {
+            "feature": "temperature",
+            "impact": 1.0857
+        },
+        {
+            "feature": "pesticides",
+            "impact": 1.0022
+        },
+        {
+            "feature": "year",
+            "impact": 0.5375
+        },
+        {
+            "feature": "rainfall",
+            "impact": 0.461
+        },
+        {
+            "feature": "temp",
+            "impact": 0.082
+        }
+    ]
+}

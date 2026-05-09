@@ -72,7 +72,16 @@ class Settings(BaseSettings):
     # ================ Securité /rebuild =======================================
     # rebuild_api_key: str
     # """OBLIGATOIRE: CLEF API POUR POUVOIR INDEXER"""
-    # ================ Base de données =======================================
+    # ================ Serveur ===============================================
+    # app_host: str = "0.0.0.0"
+    # app_port: int = 8000
+
+    # HUGGINGFACE
+    hugging_username: str = "S254"
+    huggingface_space_name: str = "Agritech_Answers"
+    huggingface_token: str
+
+    # SUPABASE
     db_user: str = "postgres.iweepkewgxlxjxbjpvgz"
     db_password: str = Field(validation_alias="sb_password")
     db_host: str = "aws-1-eu-west-2.pooler.supabase.com"
@@ -88,10 +97,6 @@ class Settings(BaseSettings):
             f"postgresql+psycopg2://{self.db_user}:{encoded_pass}@{self.db_host}:"
             f"{self.db_port}/{self.db_name}{options}"
         )
-
-    # ================ Serveur ===============================================
-    # app_host: str = "0.0.0.0"
-    # app_port: int = 8000
 
     # ================ Métadonnées ===============================================
     version: str = "agritech_V1"

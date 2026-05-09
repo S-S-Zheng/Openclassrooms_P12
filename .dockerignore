@@ -76,12 +76,7 @@ mlruns/
 
 # ---- En plus --------
 notebooks/
-datas/
 misc/
-
-# Données
-htmlcov
-.coverage
 *.png
 *.csv
 
