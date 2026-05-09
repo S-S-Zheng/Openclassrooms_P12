@@ -78,10 +78,8 @@ jobs:
           HF_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
           HF_REPO: ${{ vars.HUGGINGFACE_USERNAME }}/${{ vars.HUGGINGFACE_SPACE_NAME }}
         run: |
-          # On ajoute la destination (HF) au repo GitHub actuel
-          git remote add hf https://x-access-token:$HF_TOKEN@huggingface.co/spaces/$HF_REPO
-          # On force le push vers la branche main de HF
-          git push hf main --force
+          chmod +x deploy_hf.sh
+          ./deploy_hf.sh
 
       - name: Notify deployment
         if: success()
