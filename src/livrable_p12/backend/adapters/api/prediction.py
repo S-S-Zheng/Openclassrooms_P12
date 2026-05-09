@@ -30,6 +30,23 @@ async def predict_yield(
     # On récupère le service pré-instancié dans le lifespan
     advisor = request.app.state.advisor_service
     settings = request.app.state.settings
+    request_hash = generate_feature_hash(payload.model_dump())
+
+    # On utilise run_in_threadpool pour ne pas bloquer l'event loop
+    monitor_entry = await run_in_threadpool(
+        SupabaseRepositoryAdapter.cache_hit_or_miss, db, request_hash
+    )
+    if monitor_entry and monitor_entry.predicts:
+        logger.info(f"CACHE HIT trouvée pour {request_hash[:8]}")
+        pred = monitor_entry.predicts
+        return YieldResponse(
+            primary_prediction=[
+                {"crop": pred.crop, "yield_val": pred.yield_val, "unit": pred.unit}
+            ],  # type:ignore
+            top_features=pred.top_features,
+            version=settings.version,
+            model_type=advisor.predictor.model_type,
+        )
 
     try:
         # ML
