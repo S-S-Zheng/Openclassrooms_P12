@@ -23,7 +23,7 @@ def plot_yield_comparison(recommendations):
         labels={"Rendement": "tonnes/ha"},
         template="plotly_white",
     )
-    return st.plotly_chart(fig, width="stretch")
+    return st.plotly_chart(fig, width="stretch", key="yield_comparison_chart")
 
 
 def plot_feature_importance(features, title="Facteurs d'influence"):
@@ -44,4 +44,4 @@ def plot_feature_importance(features, title="Facteurs d'influence"):
         color="Impact",
         color_continuous_scale="RdYlGn",  # Rouge à Vert pour l'impact
     )
-    return st.plotly_chart(fig, width="stretch")
+    return st.plotly_chart(fig, width="stretch", key="feature_importance_chart")

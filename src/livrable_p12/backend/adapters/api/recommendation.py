@@ -30,6 +30,23 @@ async def get_recommendation(
     """
     advisor = request.app.state.advisor_service
     settings = request.app.state.settings
+    request_hash = generate_feature_hash(payload.model_dump())
+
+    # On utilise run_in_threadpool pour ne pas bloquer l'event loop
+    monitor_entry = await run_in_threadpool(
+        SupabaseRepositoryAdapter.cache_hit_or_miss, db, request_hash
+    )
+    # Si le hash existe ET qu'il y a une recommandation associée
+    if monitor_entry and monitor_entry.recos:
+        logger.info(f"CACHE HIT pour {request_hash[:8]}")
+        reco = monitor_entry.recos  # C'est l'objet Recommendation lié
+        return YieldResponse(
+            recommendations=reco.all_results,
+            top_features=reco.top_features,
+            llm_analysis=reco.llm_analysis,
+            version=settings.version,
+            model_type=advisor.predictor.model_type,
+        )
 
     try:
         # ML + LLM
@@ -44,7 +61,7 @@ async def get_recommendation(
         await run_in_threadpool(
             SupabaseRepositoryAdapter.save_recommendation_trade,
             db=db,
-            request_hash=generate_feature_hash(payload.model_dump()),
+            request_hash=request_hash,
             context=payload,
             results=inference_result,
             analysis=analysis,

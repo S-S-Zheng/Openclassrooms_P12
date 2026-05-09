@@ -66,7 +66,9 @@ def main():
             "pesticides_tons": st.slider(
                 "Pesticides", min_value=0, max_value=200000, value=15000, step=1000
             ),
-            "temp_anomaly": st.number_input("Anomalie Temp.", 1.0),
+            "temp_anomaly": st.number_input(
+                "Anomalie Temp.", min_value=0.0, max_value=2.0, value=1.0, step=0.1
+            ),
         }
 
     tab1, tab2 = st.tabs(["Prédiction", "Recommandation"])

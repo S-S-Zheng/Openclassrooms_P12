@@ -9,6 +9,7 @@ import logging
 import os
 
 import psutil
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from livrable_p12.backend.adapters.database.orm import Monitoring, Prediction, Recommendation
@@ -59,6 +60,14 @@ class SupabaseRepositoryAdapter:
         )
 
     @classmethod
+    def cache_hit_or_miss(cls, db: Session, request_hash: str):
+        """
+        Vérifie si le hash existe dans la table monitoring et
+        renvoie l'entrée avec ses relations chargées.
+        """
+        return db.query(Monitoring).filter(Monitoring.request_hash == request_hash).first()
+
+    @classmethod
     def save_prediction_trade(
         cls,
         db: Session,
@@ -107,7 +116,10 @@ class SupabaseRepositoryAdapter:
             db.add_all([monitoring_log, prediction_entry])
             db.commit()
             logger.info(f"Prédiction sauvegardée avec succès (Hash: {request_hash[:8]}...)")
-
+        except IntegrityError:
+            # CAS DU DOUBLON : On annule la transaction échouée mais on ne lève pas d'erreur
+            db.rollback()
+            logger.info(f"Prédiction déjà présente en base (Hash: {request_hash[:8]}...).")
         except Exception as e:
             db.rollback()
             logger.error(f"Erreur lors de la sauvegarde de la prédiction : {e}")
@@ -155,7 +167,10 @@ class SupabaseRepositoryAdapter:
             db.add_all([monitoring_log, recommendation_entry])
             db.commit()
             logger.info(f"Recommandation sauvegardée avec succès (Hash: {request_hash[:8]}...)")
-
+        except IntegrityError:
+            # CAS DU DOUBLON : Idem pour la recommandation
+            db.rollback()
+            logger.info(f"Recommandation déjà présente en base (Hash: {request_hash[:8]}...).")
         except Exception as e:
             db.rollback()
             logger.error(f"Erreur lors de la sauvegarde de la recommandation : {e}")
