@@ -35,6 +35,12 @@ from livrable_p12.backend.core.entities.models import (
 )
 from livrable_p12.backend.main import app, create_app
 
+# --------------------
+from livrable_p12.frontend.adapters.api.requests_api import RequestAgriAPIAdapter
+from livrable_p12.frontend.core.entities.models import AgriResult
+from livrable_p12.frontend.core.entities.models import FeatureImportance as FeatureImportanceFront
+from livrable_p12.frontend.core.entities.models import PredictionResult as PredictionResultFront
+
 
 # ---------------------------- DATAS ----------------------------
 @pytest.fixture
@@ -78,6 +84,7 @@ def mock_yield_response():
             FeatureImportance(feature="crop", impact=5.0),
             FeatureImportance(feature="temperature_celsius", impact=1.5),
         ],
+        llm_analysis="Analyse des résultats ML par le LLM test.",
     )
 
 
@@ -109,7 +116,7 @@ def client(db_session_for_tests):
 
 
 # ---------------------------- DB ----------------------------
-DATABASE_URL_TEST = "postgresql+psycopg2://postgres:12345@localhost:5432/test_db"
+DATABASE_URL_TEST = "postgresql+psycopg2://postgres:12345@localhost:5432/db_test"
 
 
 @pytest.fixture(scope="session")
@@ -189,3 +196,38 @@ def db_session_broken_for_tests(db_session_for_tests):
     # On "espionne" le rollback
     db_session_for_tests.rollback = MagicMock(wraps=db_session_for_tests.rollback)
     return db_session_for_tests
+
+
+# ================================================================================
+# ================================ FRONT END ================================================
+# ================================================================================
+
+# ---------------------------- DATAS ----------------------------
+
+# ---------------------------- API ----------------------------
+BASE_URL_TEST = "http://api_test:8000"
+
+
+@pytest.fixture
+def request_adapter():
+    return RequestAgriAPIAdapter(base_url=BASE_URL_TEST)
+
+
+@pytest.fixture
+def sample_agri_result():
+    return AgriResult(
+        primary_prediction=PredictionResultFront(crop="Wheat", yield_val=25.0, unit="tons/ha"),
+        recommendations=[
+            PredictionResultFront(crop="Potatoes", yield_val=30.0, unit="tons/ha"),
+            PredictionResultFront(crop="Wheat", yield_val=20.0, unit="tons/ha"),
+            PredictionResultFront(crop="Maize", yield_val=10.0, unit="tons/ha"),
+        ],
+        top_features=[
+            FeatureImportanceFront(feature="crop", impact=10.0),
+            FeatureImportanceFront(feature="country", impact=6.0),
+            FeatureImportanceFront(feature="pesticides_tons", impact=5.8),
+            FeatureImportanceFront(feature="rainfall_mm", impact=2.8),
+            FeatureImportanceFront(feature="temperature_celsius", impact=0.8),
+        ],
+        llm_analysis="bla" * 10,
+    )

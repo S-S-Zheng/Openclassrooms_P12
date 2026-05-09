@@ -42,7 +42,7 @@ anaconda_projects/
 .idea/
 
 # Poetry
-poetry.lock
+# poetry.lock
 poetry.toml
 
 # Pytest
@@ -64,6 +64,5 @@ htmlcov
 .coverage
 *.png
 *.csv
-datas/
 misc/
 notebooks/

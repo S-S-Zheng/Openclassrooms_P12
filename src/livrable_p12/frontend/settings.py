@@ -31,9 +31,7 @@ en Data Science et Production :
 
 # imports
 from functools import lru_cache
-from urllib.parse import quote_plus  # Import indispensable pour les caractères spéciaux
 
-from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # =====================================================================
@@ -47,59 +45,12 @@ class Settings(BaseSettings):
     """
 
     # ===================== Paths ======================================
-    model_path: str = "datas/results/best_model/best_model.onnx"
-    metadata_path: str = "datas/results/shap/shap_metadata.json"
-    prompt_config_path: str = "configs/prompts.yaml"
-    # ======================== LLM =====================================
-    mistral_base_url: str = "https://api.mistral.ai/v1"
-    """Via pydantic-settings, Pydantic va automatiquement chercher une variable
-    d'environnement nommée MISTRAL_API_KEY"""
-    mistral_api_key: str
-    """'mistral-small-latest', 'mistral-medium-latest' ou 'mistral-latest'"""
-    llm_model: str = "mistral-small-latest"
-    """Contrôle le côté factuel (faible valeur, conseillé 0.2) ou imaginaire du modèle """
-    llm_temperature: float = 0.2
-    """Nb max de tokens à générer """
-    llm_max_tokens: int = 512
-    """Nucleus sampling". Le modèle ne choisit ses mots que parmi les n% les plus probables."""
-    llm_top_p: float = 0.9
-    """Si l'API Mistral est surchargée (erreur 503),
-    LangChain réessaie automatiquement n fois avant d'échouer. """
-    llm_max_retries: int = 2
-    """Si Mistral ne répond pas après n sec,
-    coupe la connexion pour ne pas bloquer l'utilisateur."""
-    llm_timeout: int = 30
-    # ================ Securité /rebuild =======================================
-    # rebuild_api_key: str
-    # """OBLIGATOIRE: CLEF API POUR POUVOIR INDEXER"""
+    crop_path: str = "datas/results/shap/shap_metadatas.json"
     # ================ Serveur ===============================================
-    # app_host: str = "0.0.0.0"
-    # app_port: int = 8000
-
-    # HUGGINGFACE
-    hugging_username: str = "S254"
-    huggingface_space_name: str = "Agritech_Answers"
-    huggingface_token: str
-
-    # SUPABASE
-    db_user: str = "postgres.iweepkewgxlxjxbjpvgz"
-    db_password: str = Field(validation_alias="sb_password")
-    db_host: str = "aws-1-eu-west-2.pooler.supabase.com"
-    db_port: str = "6543"
-    db_name: str = "postgres"
-
-    @property
-    def database_url(self) -> str:
-        """Génère dynamiquement l'URL de connexion sécurisée."""
-        encoded_pass = quote_plus(self.db_password)
-        options = "?sslmode=require" if "supabase.co" in self.db_host else ""
-        return (
-            f"postgresql+psycopg2://{self.db_user}:{encoded_pass}@{self.db_host}:"
-            f"{self.db_port}/{self.db_name}{options}"
-        )
-
+    app_host: str = "localhost"
+    app_port: int = 8000
     # ================ Métadonnées ===============================================
-    version: str = "agritech_V1"
+    ui_title: str = "AgriAdvisor"
     # ================= CONFIG ===============================================
     model_config = SettingsConfigDict(
         env_file=(".env"),
