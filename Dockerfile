@@ -30,7 +30,7 @@ COPY --from=builder /app/.venv /app/.venv
 
 # On propage le PYTHONPATH pour que livrable_p12 soit reconnu
 ENV PATH="/app/.venv/bin:$PATH" \
-    PYTHONPATH="app/src" \
+    PYTHONPATH="/app/src" \
     PYTHONUNBUFFERED=1
 
 # Copie des élements
